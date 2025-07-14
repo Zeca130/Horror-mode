@@ -2,7 +2,7 @@ game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
 
 task.spawn(function()
     pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeca130/Horror-mode/refs/heads/main/Hotel%20horror%20text"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeca130/Horror-mode/refs/heads/main/Hotel%20horror%20text.lua"))()
 
     end)
 end)
@@ -35,9 +35,9 @@ end
 
 Lighting.Ambient = Color3.new(0, 0, 0)
 Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
-Lighting.Brightness = 5
-Lighting.FogStart = 40
-Lighting.FogEnd = 45
+Lighting.Brightness = 0
+Lighting.FogStart = 50
+Lighting.FogEnd = 55
 Lighting.FogColor = Color3.new(0, 0, 0)
 Lighting.GlobalShadows = true
 Lighting.ExposureCompensation = -1
