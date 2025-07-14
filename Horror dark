@@ -1,9 +1,8 @@
-local targetRoom = 0
 repeat game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait() until game.ReplicatedStorage.GameData.LatestRoom.Value == targetRoom
 
 task.spawn(function()
     pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeca130/doors-my-version-nightmareMode./refs/heads/main/Text%20dark"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeca130/Horror-mode/refs/heads/main/Hotel%20horror%20text"))()
 
     end)
 end)
@@ -36,9 +35,9 @@ end
 
 Lighting.Ambient = Color3.new(0, 0, 0)
 Lighting.OutdoorAmbient = Color3.new(0, 0, 0)
-Lighting.Brightness = 3
-Lighting.FogStart = 20
-Lighting.FogEnd = 35
+Lighting.Brightness = 5
+Lighting.FogStart = 40
+Lighting.FogEnd = 45
 Lighting.FogColor = Color3.new(0, 0, 0)
 Lighting.GlobalShadows = true
 Lighting.ExposureCompensation = -1
