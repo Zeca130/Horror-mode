@@ -1,4 +1,4 @@
-repeat game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait() until game.ReplicatedStorage.GameData.LatestRoom.Value == targetRoom
+repeat game.ReplicatedStorage.GameData.GameData.LatestRoom
 
 task.spawn(function()
     pcall(function()
