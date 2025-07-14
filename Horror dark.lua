@@ -1,4 +1,4 @@
-repeat game.ReplicatedStorage.GameData.GameData.LatestRoom
+game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
 
 task.spawn(function()
     pcall(function()
