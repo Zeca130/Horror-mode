@@ -1,4 +1,4 @@
-game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
+
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local SoundService = game:GetService("SoundService")
