@@ -161,7 +161,7 @@ timerConnection = RunService.Heartbeat:Connect(function()
         if not blocked then
             blockGui:Destroy()
             warningSound:Stop()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeca130/doors-my-version-nightmareMode./refs/heads/main/Whistle%20horror%20mode.lua"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Zeca130/doors-my-version-nightmareMode./refs/heads/main/Whistle%20horror%20mode"))()
         end
     end
 end)
