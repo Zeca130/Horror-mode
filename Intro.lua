@@ -1,0 +1,62 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local SoundService = game:GetService("SoundService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "HotelHorrorIntro"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+
+local introSound = Instance.new("Sound")
+introSound.SoundId = "rbxassetid://1835335351"
+introSound.Volume = 0.5
+introSound.Parent = screenGui
+introSound:Play()
+
+local background = Instance.new("Frame")
+background.Size = UDim2.new(1, 0, 1, 0)
+background.BackgroundColor3 = Color3.new(0, 0, 0)
+background.Parent = screenGui
+
+local logo = Instance.new("ImageLabel")
+logo.Image = "rbxassetid://132045076352907"
+logo.BackgroundTransparency = 1
+logo.Size = UDim2.new(0, 0, 0, 0)
+logo.Position = UDim2.new(0.5, 0, 0.35, 0)
+logo.AnchorPoint = Vector2.new(0.5, 0.5)
+logo.Parent = screenGui
+
+local warningText = Instance.new("TextLabel")
+warningText.Text = "welcome to horror hotel..."
+warningText.Font = Enum.Font.GothamBold
+warningText.TextSize = 24
+warningText.TextColor3 = Color3.new(1, 0, 0)
+warningText.TextTransparency = 1
+warningText.Size = UDim2.new(1, 0, 0, 50)
+warningText.Position = UDim2.new(0, 0, 0.7, 0)
+warningText.BackgroundTransparency = 1
+warningText.Parent = screenGui
+
+local function animateIntro()
+    wait(1)
+    TweenService:Create(logo, TweenInfo.new(2), {Size = UDim2.new(0, 200, 0, 200)}):Play()
+    wait(3)
+    TweenService:Create(warningText, TweenInfo.new(1.5), {TextTransparency = 0}):Play()
+    wait(3)
+    TweenService:Create(background, TweenInfo.new(2), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(logo, TweenInfo.new(2), {ImageTransparency = 1}):Play()
+    TweenService:Create(warningText, TweenInfo.new(2), {TextTransparency = 1}):Play()
+    
+  
+    TweenService:Create(introSound, TweenInfo.new(2), {Volume = 0}):Play()
+    wait(2)
+    introSound:Stop()
+    screenGui:Destroy()
+end
+
+animateIntro()
