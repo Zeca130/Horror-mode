@@ -164,6 +164,5 @@ scare:Play()
 
 -- Hủy GUI sau 1.2 giây kể từ lúc bắt đầu
 task.delay(4.5, function()
-       replicatesignal(game.Players.LocalPlayer.Kill)
 	JumpscareGui:Destroy()
 end)
