@@ -1,0 +1,241 @@
+-- Ожидание смены комнаты
+game.ReplicatedStorage.GameData.LatestRoom.Changed:Wait()
+
+-- Импорт спавнера
+local spawner = loadstring(game:HttpGet("https://raw.githubusercontent.com/RegularVynixu/Utilities/main/Doors/Entity%20Spawner/V2/Source.lua"))()
+local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local camera = Workspace.CurrentCamera
+
+-- Инициализация entity
+local entity = spawner.Create({
+	Entity = {
+		Name = "A60",
+		Asset = "rbxassetid://71698469073593",
+		HeightOffset = 0
+	},
+	Lights = {
+		Flicker = {Enabled = false, Duration = 1},
+		Shatter = true,
+		Repair = false
+	},
+	Earthquake = {Enabled = true},
+	CameraShake = {
+		Enabled = true,
+		Range = 100,
+		Values = {20, 30, 0.1, 0.1}
+	},
+	Movement = {
+		Speed = 200,
+		Delay = 6,
+		Reversed = false
+	},
+	Rebounding = {
+		Enabled = true,
+		Type = "Ambush",
+		Min = 4,
+		Max = 8,
+		Delay = 0.5
+	},
+	Damage = {
+		Enabled = true,
+		Range = 100,
+		Amount = 0.01
+	},
+	Crucifixion = {
+		Enabled = true,
+		Range = math.huge,
+		Resist = false,
+		Break = true
+	},
+	Death = {
+		Type = "Guiding",
+		Hints = {"Death", "Hints", "Go", "Here"},
+		Cause = ""
+	}
+})
+
+-- Эффекты освещения
+local lighting = game.Lighting
+lighting.MainColorCorrection.TintColor = Color3.fromRGB(255, 0, 0)
+lighting.MainColorCorrection.Contrast = 0.2
+TweenService:Create(lighting.MainColorCorrection, TweenInfo.new(2.5), {Contrast = 0}):Play()
+TweenService:Create(lighting.MainColorCorrection, TweenInfo.new(20), {TintColor = Color3.fromRGB(255, 255, 255)}):Play()
+
+-- Тряска камеры
+local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
+local camara = game.Workspace.CurrentCamera
+local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
+ camara.CFrame = camara.CFrame * shakeCf
+end)
+camShake:Start()
+camShake:ShakeOnce(40,70,0,4,2,12)
+local CameraShaker = require(game.ReplicatedStorage.CameraShaker)
+local camara = game.Workspace.CurrentCamera
+
+local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(cf)
+	camara.CFrame = camara.CFrame * cf
+end)
+
+camShake:Start()
+camShake:Shake(CameraShaker.Presets.Earthquake)
+
+-- ================== ПРИ ПОЯВЛЕНИИ ==================
+entity:SetCallback("OnSpawned", function()
+	local part = workspace:WaitForChild("A60")
+	local object = part:WaitForChild("RushNew")
+	local attachment = object:WaitForChild("ImageFace")
+	local emitter = attachment:FindFirstChildWhichIsA("ParticleEmitter")
+
+	object.CanCollide = false
+
+	local running = true
+	spawn(function()
+		while running and emitter and emitter:IsDescendantOf(workspace) do
+			local textures = {
+				"rbxassetid://12145534911",
+				"rbxassetid://12145554242",
+				"rbxassetid://12145599498",
+				"rbxassetid://12145599275",
+				"rbxassetid://12155335619",
+				"rbxassetid://12145598814",
+				"rbxassetid://12146135062",
+				"rbxassetid://11378285585"
+			}
+			for _, tex in ipairs(textures) do
+				emitter.Texture = tex
+				task.wait()
+			end
+		end
+	end)
+
+	entity:SetCallback("OnDespawning", function()
+		running = false
+
+		local camShake = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
+			camera.CFrame = camera.CFrame * shakeCf
+		end)
+		camShake:Start()
+		camShake:ShakeOnce(50, 50, 0, 2, 1, 6)
+
+		local tints = {
+			{Color = Color3.fromRGB(30, 30, 30), Time = 2},
+			{Color = Color3.fromRGB(60, 60, 60), Time = 2},
+			{Color = Color3.fromRGB(120, 120, 120), Time = 5},
+			{Color = Color3.fromRGB(255, 255, 255), Time = 5}
+		}
+
+		for _, tint in ipairs(tints) do
+			local t = TweenService:Create(lighting.MainColorCorrection, TweenInfo.new(tint.Time), {TintColor = tint.Color})
+			t:Play()
+			task.wait(tint.Time)
+		end
+	end)
+end)
+
+-- ================== ПРИ УРОНЕ ==================
+entity:SetCallback("OnDamagePlayer", function(newHealth)
+	if newHealth == 0 then
+		warn("Игрок умер")
+		return
+	end
+
+	task.spawn(function()
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoid = character:WaitForChild("Humanoid")
+		local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+		local entityModel = workspace:FindFirstChild("A60")
+		local primaryPart = entityModel and entityModel:FindFirstChild("RushNew")
+		if not primaryPart then return end
+
+		-- 🔇 Временно отключить все звуки в игре
+		local allSounds = {}
+		for _, obj in pairs(game:GetDescendants()) do
+			if obj:IsA("Sound") and obj.IsPlaying then
+				obj:Stop()
+				table.insert(allSounds, obj)
+			end
+		end
+
+		-- Воспроизвести звук jumpscare
+local function GetGitSound(GithubSnd, SoundName)
+                local url = GithubSnd
+                if not isfile(SoundName .. ".mp3") then
+                    writefile(SoundName .. ".mp3", game:HttpGet(url))
+                end
+                local sound = Instance.new("Sound")
+                sound.SoundId = (getcustomasset or getsynasset)(SoundName .. ".mp3")
+                return sound
+end
+local Jumpscare = GetGitSound("https://github.com/Kotyara19k-Doorsspawner/Random-files/raw/main/A60JumpscareOld.mp3","A60")
+Jumpscare.Parent = workspace
+Jumpscare.Volume = 50
+Jumpscare.PlaybackSpeed = 1
+Jumpscare:Play()
+
+		-- Переместить entity к игроку
+		primaryPart.Anchored = true
+		entityModel.PrimaryPart = primaryPart
+		local targetPos = humanoidRootPart.Position + humanoidRootPart.CFrame.LookVector * 10
+		local moveTween = TweenService:Create(primaryPart, TweenInfo.new(0.2), {
+			CFrame = CFrame.new(targetPos, camera.CFrame.Position)
+		})
+		moveTween:Play()
+		moveTween.Completed:Wait()
+
+		-- Заблокировать управление игроком
+		humanoid.WalkSpeed = 0
+		humanoid.PlatformStand = true
+
+		-- Камера jumpscare
+		local camConn
+		camConn = RunService.RenderStepped:Connect(function()
+			if character:GetAttribute("Hiding") then
+				-- При укрытии: остановить jumpscare, возобновить все звуки
+				if camConn then camConn:Disconnect() end
+				camera.CameraType = Enum.CameraType.Custom
+
+				for _, s in pairs(allSounds) do
+					if s and s.Parent then
+						s:Play()
+					end
+				end
+
+				entityModel:Destroy()
+			else
+				local desiredPos = camera.CFrame.Position + camera.CFrame.LookVector * 4 + Vector3.new(0, 0, 0)
+				primaryPart.CFrame = CFrame.new(desiredPos, camera.CFrame.Position)
+				camera.CFrame = CFrame.lookAt(camera.CFrame.Position, primaryPart.Position)
+			end
+		end)
+
+		-- Наносить урон в течение 1 секунды
+		local damageDuration = 2.5
+		local startTime = tick()
+		while tick() - startTime < damageDuration and humanoid.Health > 0 do
+			if character:GetAttribute("Hiding") then break end
+			humanoid.Health -= 4
+			task.wait(0.04)
+		end
+
+		-- Если не успел укрыться, все равно очистить камеру
+		if camConn then camConn:Disconnect() end
+		camera.CameraType = Enum.CameraType.Custom
+
+		-- Возобновить звуки, если не успел укрыться
+		for _, s in pairs(allSounds) do
+			if s and s.Parent then
+				s:Play()
+			end
+		end
+	end)
+end)
+
+-- ================== ЗАПУСК ENTITY ==================
+entity:Run()
