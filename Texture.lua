@@ -1,28 +1,28 @@
 -- Хоррор-текстуры для металла в Doors
 local TEXTURES = {
-    METAL_WITH_NAILS = "rbxassetid://13129246579",  -- Металл с кровавыми следами и царапинами
-    METAL_PLATES = "rbxassetid://13129248763",      -- Искореженные металлические пластины с темными пятнами
-    METAL_GRATE = "rbxassetid://13129250241",       -- Грязная металлическая решетка с подтеками
-    METAL_RUSTY = "rbxassetid://13129251827",       -- Ржавый металл с пятнами, напоминающими кровь
-    METAL_HEAVY_RUST = "rbxassetid://13129253412"   -- Сильно корродированный металл с мрачными узорами
+    METAL_WITH_NAILS = "rbxassetid://13129246579",
+    METAL_PLATES = "rbxassetid://13129248763",
+    METAL_GRATE = "rbxassetid://13129250241",
+    METAL_RUSTY = "rbxassetid://13129251827",
+    METAL_HEAVY_RUST = "rbxassetid://13129253412"
 }
 
--- Основная функция для наложения текстур
+-- Кэш для уже обработанных частей
+local processedParts = {}
+
+-- Оптимизированная функция для наложения текстур
 local function applyMetalTexture(part, textureType)
-    -- Очищаем все существующие текстуры и декали
-    for _, child in ipairs(part:GetChildren()) do
-        if child:IsA("Texture") or child:IsA("Decal") then
-            child:Destroy()
-        end
-    end
+    -- Проверяем, не был ли уже обработан этот part
+    if processedParts[part] then return end
+    processedParts[part] = true
 
-    -- Устанавливаем металлический материал с мрачными параметрами
+    -- Устанавливаем свойства материала
     part.Material = Enum.Material.Metal
-    part.Reflectance = 0.15  -- Уменьшенный блеск для мрачной атмосферы
-    part.Color = Color3.fromRGB(80, 70, 60)  -- Темный, грязный цвет металла
+    part.Reflectance = 0.15
+    part.Color = Color3.fromRGB(80, 70, 60)
 
-    -- Выбираем текстуру в зависимости от типа объекта
-    local textureId = TEXTURES.METAL_WITH_NAILS  -- По умолчанию металл с кровавыми следами
+    -- Выбираем текстуру
+    local textureId = TEXTURES.METAL_WITH_NAILS
     
     if textureType == "plates" then
         textureId = TEXTURES.METAL_PLATES
@@ -34,26 +34,17 @@ local function applyMetalTexture(part, textureType)
         textureId = TEXTURES.METAL_HEAVY_RUST
     end
 
-    -- Создаем новую текстуру с хоррор-стилистикой
-    local texture = Instance.new("Texture")
-    texture.Texture = textureId
-    texture.StudsPerTileU = 2.5  -- Немного измененный масштаб для более натурального вида
-    texture.StudsPerTileV = 2.5
-    texture.Face = Enum.NormalId.Front
-    texture.Parent = part
-
-    -- Добавляем текстуры на все видимые стороны для мрачной атмосферы
-    local backTexture = texture:Clone()
-    backTexture.Face = Enum.NormalId.Back
-    backTexture.Parent = part
-
-    local leftTexture = texture:Clone()
-    leftTexture.Face = Enum.NormalId.Left
-    leftTexture.Parent = part
-
-    local rightTexture = texture:Clone()
-    rightTexture.Face = Enum.NormalId.Right
-    rightTexture.Parent = part
+    -- Создаем текстуру только для видимых сторон
+    local faces = {Enum.NormalId.Front, Enum.NormalId.Back, Enum.NormalId.Right, Enum.NormalId.Left}
+    
+    for _, face in ipairs(faces) do
+        local texture = Instance.new("Texture")
+        texture.Texture = textureId
+        texture.StudsPerTileU = 2.5
+        texture.StudsPerTileV = 2.5
+        texture.Face = face
+        texture.Parent = part
+    end
 end
 
 -- Функция для определения типа объекта (без изменений)
@@ -61,54 +52,61 @@ local function getPartType(part)
     local lowerName = part.Name:lower()
     local parentName = part.Parent and part.Parent.Name:lower() or ""
 
-    -- Двери и рамы
     if lowerName:find("door") or parentName:find("door") then
         if lowerName:find("frame") or lowerName:find("рама") then
-            return "plates"  -- Дверные рамы с болтами
+            return "plates"
         else
-            return "default"  -- Двери со следами насилия
+            return "default"
         end
-    
-    -- Шкафы и металлическая мебель
     elseif lowerName:find("cabinet") or lowerName:find("locker") then
         return "plates"
-    
-    -- Стены и перегородки
     elseif lowerName:find("wall") or lowerName:find("стен") then
         if lowerName:find("grate") then
             return "grate"
         else
             return "rusty"
         end
-    
-    -- Технические элементы
     elseif lowerName:find("pipe") or lowerName:find("vent") then
         return "heavy_rust"
-    
-    -- Полы и потолки
     elseif lowerName:find("floor") or lowerName:find("пол") then
         return "plates"
     elseif lowerName:find("ceiling") or lowerName:find("потолок") then
         return "rusty"
-    
-    -- Все остальные объекты
     else
         return "default"
     end
 end
 
--- Основная функция обработки (без изменений)
+-- Оптимизированная обработка с разделением на кадры
 local function processEnvironment()
+    local parts = {}
+    
+    -- Сначала собираем все части для обработки
     for _, part in ipairs(workspace:GetDescendants()) do
         if part:IsA("BasePart") and part.Transparency < 0.5 then
-            local partType = getPartType(part)
-            applyMetalTexture(part, partType)
+            table.insert(parts, part)
         end
     end
+    
+    -- Обрабатываем по 10 частей за кадр
+    local index = 0
+    local connection
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
+        local processed = 0
+        while processed < 10 and index < #parts do
+            index = index + 1
+            local part = parts[index]
+            local partType = getPartType(part)
+            applyMetalTexture(part, partType)
+            processed = processed + 1
+        end
+        
+        if index >= #parts then
+            connection:Disconnect()
+            print("Хоррор-текстуры металла успешно применены ко всем объектам!")
+        end
+    end)
 end
 
 -- Запускаем обработку
 processEnvironment()
-game:GetService("RunService").Heartbeat:Connect(onHeartbeat)
-
-print("Хоррор-текстуры металла успешно применены ко всем объектам!")
